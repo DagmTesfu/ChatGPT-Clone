@@ -17,9 +17,13 @@ export default function ChatArea({ conversation }) {
     ).filter(function (item) {
 
         return (
-            item.message &&
-            item.message.content.content_type === "text"
-        );
+    item.message &&
+    item.message.content.content_type === "text" &&
+    (
+        item.message.author.role === "user" ||
+        item.message.author.role === "assistant"
+    )
+);
 
     });
 

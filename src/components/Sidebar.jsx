@@ -59,7 +59,7 @@ export default function Sidebar({
 
                         return (
                             <p
-                                key={item.id}
+                                key={item.conversation_id}
                                 className={
                                     isActive
                                         ? "history-item active-chat"

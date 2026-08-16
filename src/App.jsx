@@ -1,6 +1,7 @@
 import { useState } from "react";
 import "./App.css";
 
+
 import Sidebar from "./components/Sidebar";
 import ChatHeader from "./components/ChatHeader";
 import ChatArea from "./components/ChatArea";
@@ -14,15 +15,12 @@ import {
 export default function App() {
     const [selectedChat, setSelectedChat] = useState(null);
 
+
     function handleChatClick(chatItem) {
-        if (chatItem.title === "Work Session Start") {
-            setSelectedChat({
-                ...searchHistory,
-                title: chatItem.title
-            });
-        } else {
-            setSelectedChat(null);
-        }
+     const foundChat = searchHistory.find(function (chat) {
+        return chat.title === chatItem.title;
+     });
+     setSelectedChat(foundChat || null);
     }
 
     return (
