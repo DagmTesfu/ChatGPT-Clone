@@ -1,15 +1,9 @@
-import { useState } from "react";
-
-export default function ChatInput({ isChatSelected }) {
-    const [message, setMessage] = useState("");
-
-    function handleInput(event) {
-        setMessage(event.target.value);
-
-        event.target.style.height = "auto";
-        event.target.style.height =
-            event.target.scrollHeight + "px";
-    }
+export default function ChatInput({
+    isChatSelected,
+    message,
+    setMessage,
+    handleSubmit
+}) {
 
     return (
         <div
@@ -20,7 +14,7 @@ export default function ChatInput({ isChatSelected }) {
             }
         >
 
-            <div className="chat-input">
+            <form className="chat-input" onSubmit={handleSubmit}    >
 
                 {/* Plus Button */}
 
@@ -33,14 +27,33 @@ export default function ChatInput({ isChatSelected }) {
 
 
                 {/* Message Textarea */}
-
+               
                 <textarea
                     className="message-input"
                     placeholder="Ask ChatGPT"
                     rows="1"
                     value={message}
-                    onChange={handleInput}
+                    // Keep the textarea value synchronized with the message state in App.
+                    onChange={function (event) {
+                        setMessage(event.target.value);
+
+                        // Grow the textarea when its content needs more vertical space.
+                        event.target.style.height = "auto";
+                        event.target.style.height =
+                            event.target.scrollHeight + "px";
+                    }}
+                    // Enter submits; Shift + Enter keeps its normal new-line behavior.
+                    onKeyDown={function (event) {
+                        if (event.key === "Enter" && !event.shiftKey) {
+                            event.preventDefault();
+                            handleSubmit(event);
+                        }
+                    }}
                 ></textarea>
+
+                
+
+                
 
 
                 {/* Microphone Button */}
@@ -77,7 +90,8 @@ export default function ChatInput({ isChatSelected }) {
 
                 <button
                     className="send-btn"
-                    type="button"
+                    type="submit"
+                    
                 >
                     <svg
                         viewBox="0 0 24 24"
@@ -94,7 +108,7 @@ export default function ChatInput({ isChatSelected }) {
                     </svg>
                 </button>
 
-            </div>
+           </form>
 
 
             <p className="chat-warning">
