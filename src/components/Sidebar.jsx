@@ -5,13 +5,18 @@ export default function Sidebar({
     onChatClick,
     selectedChat
 }) {
+
+    // Search only belongs to the sidebar, so keep it here
     const [searchText, setSearchText] = useState("");
 
+
+    // Only show chats that match the search
     const filteredChats = chats.filter(function (item) {
         return item.title
             .toLowerCase()
             .includes(searchText.toLowerCase().trim());
     });
+
 
     return (
         <div className="side-bar">
@@ -19,6 +24,7 @@ export default function Sidebar({
             <h1 className="p1">
                 ChatGPT
             </h1>
+
 
             <div className="p2-text">
                 <p>New Chat</p>
@@ -28,10 +34,13 @@ export default function Sidebar({
                 <p>More</p>
             </div>
 
+
             <h2 className="hh-1">
                 Chats
             </h2>
 
+
+            {/* Search through chat titles */}
             <input
                 type="text"
                 className="textarea-11"
@@ -41,6 +50,7 @@ export default function Sidebar({
                     setSearchText(event.target.value);
                 }}
             />
+
 
             <div className="chat-history">
 
@@ -54,12 +64,13 @@ export default function Sidebar({
 
                     filteredChats.map(function (item) {
 
+                        // Highlight the chat that's currently open
                         const isActive =
                             selectedChat?.title === item.title;
 
                         return (
                             <p
-                                key={item.conversation_id}
+                                key={item.id}
                                 className={
                                     isActive
                                         ? "history-item active-chat"
@@ -77,6 +88,7 @@ export default function Sidebar({
                 )}
 
             </div>
+
 
             <div className="footer">
 

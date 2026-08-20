@@ -1,5 +1,6 @@
 import { useState } from "react";
 import "./App.css";
+
 import Sidebar from "./components/Sidebar";
 import ChatHeader from "./components/ChatHeader";
 import ChatArea from "./components/ChatArea";
@@ -11,34 +12,42 @@ import {
 } from "./data/chatData";
 
 export default function App() {
-    // App owns the shared state because Sidebar, ChatArea, and ChatInput all use it.
-    const [message, setMessage] = useState("");
+
+    // Start with the chat data from chatData.js
     const [selectedChat, setSelectedChat] = useState(null);
-    const [chats, setChats] = useState(lists.items);
+    const [chatList, setChatList] = useState(lists);
+    const [conversations, setConversations] = useState(searchHistory);
 
-    // This one function handles everything that happens when a message is submitted.
-    function handleSubmit(event) {
-        // Stop the form from refreshing the page.
-        event.preventDefault();
+    // Runs when the user sends a new message
+    function handleSend(text) {
+        if (!text.trim()) return;
 
-        // Remove extra spaces and stop if the message is empty.
-        const text = message.trim();
-        if (!text) return;
-
-        // Each message needs a unique key for the conversation mapping and React rendering.
+        // Give the new chat and message their own ids
+        const newId = crypto.randomUUID();
         const messageId = crypto.randomUUID();
 
-        // Use the same data shape that ChatArea already knows how to display.
-        const newChat = {
-            id: messageId,
-            title: text.slice(0, 35),
+        // This is what will show in the sidebar
+        const newChatItem = {
+            id: newId,
+            title: text
+        };
+
+        // Build the conversation in the same shape as chatData
+        const newConversation = {
+            title: text,
+            conversation_id: newId,
+
             mapping: {
                 [messageId]: {
                     id: messageId,
+
                     message: {
+                        id: messageId,
+
                         author: {
                             role: "user"
                         },
+
                         content: {
                             content_type: "text",
                             parts: [text]
@@ -48,32 +57,45 @@ export default function App() {
             }
         };
 
-        // Adding the object to chats makes Sidebar's existing .map() display its title.
-        setChats(function (currentChats) {
-            return [newChat, ...currentChats];
+        // Put the new chat at the top of the sidebar
+        setChatList(function (prev) {
+            return {
+                ...prev,
+                items: [
+                    newChatItem,
+                    ...prev.items
+                ]
+            };
         });
 
-        // Selecting the same object makes ChatArea display the submitted message.
-        setSelectedChat(newChat);
+        // Keep the new conversation with the rest of the chats
+        setConversations(function (prev) {
+            return [
+                newConversation,
+                ...prev
+            ];
+        });
 
-        // Clear the controlled textarea after a successful submission.
-        setMessage(""); 
+        // Open the chat right after it is created
+        setSelectedChat(newConversation);
     }
 
 
+    // Find the conversation that belongs to the clicked sidebar item
     function handleChatClick(chatItem) {
-    const foundChat = searchHistory.find(function (chat) {
-        return chat.title === chatItem.title;
-    });
+        const foundChat = conversations.find(function (chat) {
+            return chat.title === chatItem.title;
+        });
 
-    setSelectedChat(foundChat || chatItem);
-}
+        setSelectedChat(foundChat || null);
+    }
+
 
     return (
         <div className="container">
 
             <Sidebar
-                chats={chats}
+                chats={chatList.items}
                 onChatClick={handleChatClick}
                 selectedChat={selectedChat}
             />
@@ -88,9 +110,7 @@ export default function App() {
 
                 <ChatInput
                     isChatSelected={selectedChat !== null}
-                    message={message}
-                    setMessage={setMessage}
-                    handleSubmit={handleSubmit}
+                    onSend={handleSend}
                 />
 
             </div>

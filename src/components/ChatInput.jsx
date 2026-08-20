@@ -1,9 +1,34 @@
+import { useState } from "react";
+
 export default function ChatInput({
     isChatSelected,
-    message,
-    setMessage,
-    handleSubmit
+    onSend
 }) {
+
+    // Keeps track of what's currently inside the textarea
+    const [input, setInput] = useState("");
+
+
+    function handleSend() {
+        if (!input.trim()) return;
+
+        // Send the text back up to App
+        onSend(input);
+
+        // Clear the textarea after sending
+        setInput("");
+    }
+
+
+    function handleKeyDown(e) {
+
+        // Enter sends the message, Shift + Enter still makes a new line
+        if (e.key === "Enter" && !e.shiftKey) {
+            e.preventDefault();
+            handleSend();
+        }
+    }
+
 
     return (
         <div
@@ -14,10 +39,9 @@ export default function ChatInput({
             }
         >
 
-            <form className="chat-input" onSubmit={handleSubmit}    >
+            <div className="chat-input">
 
-                {/* Plus Button */}
-
+                {/* Add / attachment button */}
                 <button
                     className="input-btn plus-btn"
                     type="button"
@@ -26,38 +50,18 @@ export default function ChatInput({
                 </button>
 
 
-                {/* Message Textarea */}
-               
+                {/* Main message box */}
                 <textarea
                     className="message-input"
                     placeholder="Ask ChatGPT"
                     rows="1"
-                    value={message}
-                    // Keep the textarea value synchronized with the message state in App.
-                    onChange={function (event) {
-                        setMessage(event.target.value);
-
-                        // Grow the textarea when its content needs more vertical space.
-                        event.target.style.height = "auto";
-                        event.target.style.height =
-                            event.target.scrollHeight + "px";
-                    }}
-                    // Enter submits; Shift + Enter keeps its normal new-line behavior.
-                    onKeyDown={function (event) {
-                        if (event.key === "Enter" && !event.shiftKey) {
-                            event.preventDefault();
-                            handleSubmit(event);
-                        }
-                    }}
+                    value={input}
+                    onChange={(e) => setInput(e.target.value)}
+                    onKeyDown={handleKeyDown}
                 ></textarea>
 
-                
 
-                
-
-
-                {/* Microphone Button */}
-
+                {/* Microphone */}
                 <button
                     className="input-btn mic-btn"
                     type="button"
@@ -86,12 +90,11 @@ export default function ChatInput({
                 </button>
 
 
-                {/* Send Button */}
-
+                {/* Send message */}
                 <button
                     className="send-btn"
-                    type="submit"
-                    
+                    type="button"
+                    onClick={handleSend}
                 >
                     <svg
                         viewBox="0 0 24 24"
@@ -108,7 +111,7 @@ export default function ChatInput({
                     </svg>
                 </button>
 
-           </form>
+            </div>
 
 
             <p className="chat-warning">
