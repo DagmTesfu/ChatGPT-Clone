@@ -1,22 +1,21 @@
 import { useState } from "react";
+import ChatOptions from "./ChatOptions";
 
 export default function Sidebar({
     chats,
     onChatClick,
-    selectedChat
+    selectedChat,
+    handleDelete,
+    handleRename
 }) {
-
-    // Search only belongs to the sidebar, so keep it here
     const [searchText, setSearchText] = useState("");
 
-
-    // Only show chats that match the search
-    const filteredChats = chats.filter(function (item) {
-        return item.title
+    // Keep only chats that match the search
+    const filteredChats = chats.filter((chat) =>
+        chat.title
             .toLowerCase()
-            .includes(searchText.toLowerCase().trim());
-    });
-
+            .includes(searchText.toLowerCase().trim())
+    );
 
     return (
         <div className="side-bar">
@@ -24,7 +23,6 @@ export default function Sidebar({
             <h1 className="p1">
                 ChatGPT
             </h1>
-
 
             <div className="p2-text">
                 <p>New Chat</p>
@@ -34,23 +32,17 @@ export default function Sidebar({
                 <p>More</p>
             </div>
 
-
             <h2 className="hh-1">
                 Chats
             </h2>
 
-
-            {/* Search through chat titles */}
             <input
                 type="text"
                 className="textarea-11"
                 placeholder="Search History"
                 value={searchText}
-                onChange={function (event) {
-                    setSearchText(event.target.value);
-                }}
+                onChange={(e) => setSearchText(e.target.value)}
             />
-
 
             <div className="chat-history">
 
@@ -62,33 +54,33 @@ export default function Sidebar({
 
                 ) : (
 
-                    filteredChats.map(function (item) {
+                    filteredChats.map((chat) => (
+                        <p
+                            key={chat.id}
 
-                        // Highlight the chat that's currently open
-                        const isActive =
-                            selectedChat?.title === item.title;
+                            className={
+                                selectedChat?.title === chat.title
+                                    ? "history-item active-chat"
+                                    : "history-item"
+                                    
+                            }
 
-                        return (
-                            <p
-                                key={item.id}
-                                className={
-                                    isActive
-                                        ? "history-item active-chat"
-                                        : "history-item"
-                                }
-                                onClick={function () {
-                                    onChatClick(item);
-                                }}
-                            >
-                                {item.title}
-                            </p>
-                        );
-                    })
+                            onClick={() => onChatClick(chat)}
+                        >
+                            {chat.title}
+                            <span onClick={(e) => e.stopPropagation()}>
+                             <ChatOptions 
+                             id={chat.id}
+                             handleDelete={handleDelete}
+                             handleRename={handleRename}/>
+                             </span>
+                        </p>
+                        
+                    ))
 
                 )}
 
             </div>
-
 
             <div className="footer">
 

@@ -4,27 +4,23 @@ export default function ChatInput({
     isChatSelected,
     onSend
 }) {
-
-    // Keeps track of what's currently inside the textarea
     const [input, setInput] = useState("");
 
 
     function handleSend() {
         if (!input.trim()) return;
 
-        // Send the text back up to App
         onSend(input);
-
-        // Clear the textarea after sending
         setInput("");
     }
 
 
-    function handleKeyDown(e) {
-
-        // Enter sends the message, Shift + Enter still makes a new line
-        if (e.key === "Enter" && !e.shiftKey) {
-            e.preventDefault();
+    function handleKeyDown(event) {
+        if (
+            event.key === "Enter" &&
+            !event.shiftKey
+        ) {
+            event.preventDefault();
             handleSend();
         }
     }
@@ -41,7 +37,6 @@ export default function ChatInput({
 
             <div className="chat-input">
 
-                {/* Add / attachment button */}
                 <button
                     className="input-btn plus-btn"
                     type="button"
@@ -50,18 +45,20 @@ export default function ChatInput({
                 </button>
 
 
-                {/* Main message box */}
                 <textarea
                     className="message-input"
                     placeholder="Ask ChatGPT"
                     rows="1"
                     value={input}
-                    onChange={(e) => setInput(e.target.value)}
+
+                    onChange={function (event) {
+                        setInput(event.target.value);
+                    }}
+
                     onKeyDown={handleKeyDown}
-                ></textarea>
+                />
 
 
-                {/* Microphone */}
                 <button
                     className="input-btn mic-btn"
                     type="button"
@@ -77,20 +74,12 @@ export default function ChatInput({
                         strokeLinejoin="round"
                     >
                         <path d="M12 2a3 3 0 0 0-3 3v7a3 3 0 0 0 6 0V5a3 3 0 0 0-3-3z" />
-
                         <path d="M19 10v2a7 7 0 0 1-14 0v-2" />
-
-                        <line
-                            x1="12"
-                            y1="19"
-                            x2="12"
-                            y2="22"
-                        />
+                        <line x1="12" y1="19" x2="12" y2="22" />
                     </svg>
                 </button>
 
 
-                {/* Send message */}
                 <button
                     className="send-btn"
                     type="button"

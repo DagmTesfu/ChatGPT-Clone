@@ -6,82 +6,78 @@ import ChatHeader from "./components/ChatHeader";
 import ChatArea from "./components/ChatArea";
 import ChatInput from "./components/ChatInput";
 
-import {
-    lists,
-    searchHistory
-} from "./data/chatData";
+import { lists, searchHistory } from "./data/chatData";
 
 export default function App() {
-
-    // Start with the chat data from chatData.js
     const [selectedChat, setSelectedChat] = useState(null);
-    const [chatList, setChatList] = useState(lists);
-    const [conversations, setConversations] = useState(searchHistory);
 
-    // Runs when the user sends a new message
+    // We only need the items array for the sidebar
+    const [chatList, setChatList] = useState(lists.items);
+
+    // Full conversations
+    const [conversations, setConversations] = useState(searchHistory);
+    
+        //Delete Function
+    const handleDelete = (idToRemove) => {
+        const updatedData = chatList.filter(
+            (chat) => chat.id !== idToRemove
+        );
+
+    setChatList(updatedData);
+    };
+
+
+    // Rename Function
+    const handleRename = (id) => {
+        const newTitle = prompt("Enter new Title")
+        if (!newTitle || newTitle.trim() === '') return;
+        
+        const updatedData = chatList.map((chat) => (
+            chat.id === id ? {...chat, title: newTitle} : chat
+        ))
+        setChatList(updatedData);
+
+        
+    }
+
     function handleSend(text) {
         if (!text.trim()) return;
 
-        // Give the new chat and message their own ids
-        const newId = crypto.randomUUID();
-        const messageId = crypto.randomUUID();
+        const chatId = crypto.randomUUID();
 
-        // This is what will show in the sidebar
-        const newChatItem = {
-            id: newId,
+        const newChat = {
+            id: chatId,
             title: text
         };
 
-        // Build the conversation in the same shape as chatData
         const newConversation = {
+            conversation_id: chatId,
             title: text,
-            conversation_id: newId,
 
-            mapping: {
-                [messageId]: {
-                    id: messageId,
-
-                    message: {
-                        id: messageId,
-
-                        author: {
-                            role: "user"
-                        },
-
-                        content: {
-                            content_type: "text",
-                            parts: [text]
-                        }
-                    }
+            messages: [
+                {
+                    id: crypto.randomUUID(),
+                    role: "user",
+                    text: text
                 }
-            }
+            ]
         };
 
-        // Put the new chat at the top of the sidebar
-        setChatList(function (prev) {
-            return {
-                ...prev,
-                items: [
-                    newChatItem,
-                    ...prev.items
-                ]
-            };
+        // Add the title to the sidebar
+        setChatList(function (oldChats) {
+            return [newChat, ...oldChats];
         });
 
-        // Keep the new conversation with the rest of the chats
-        setConversations(function (prev) {
-            return [
-                newConversation,
-                ...prev
-            ];
+        // Save the conversation
+        setConversations(function (oldConversations) {
+            return [newConversation, ...oldConversations];
         });
 
-        // Open the chat right after it is created
+        // Open it right away
         setSelectedChat(newConversation);
     }
 
 
-    // Find the conversation that belongs to the clicked sidebar item
     function handleChatClick(chatItem) {
         const foundChat = conversations.find(function (chat) {
             return chat.title === chatItem.title;
@@ -95,9 +91,11 @@ export default function App() {
         <div className="container">
 
             <Sidebar
-                chats={chatList.items}
+                chats={chatList}
                 onChatClick={handleChatClick}
                 selectedChat={selectedChat}
+                handleDelete={handleDelete}
+                handleRename={handleRename}
             />
 
             <div className="main-body">

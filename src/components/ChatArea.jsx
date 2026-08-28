@@ -12,20 +12,43 @@ export default function ChatArea({ conversation }) {
         );
     }
 
-    const messages = Object.values(
-        conversation.mapping
-    ).filter(function (item) {
 
-        return (
-    item.message &&
-    item.message.content.content_type === "text" &&
-    (
-        item.message.author.role === "user" ||
-        item.message.author.role === "assistant"
-    )
-);
+    let messages = [];
 
-    });
+
+    // New chats created inside our app
+    if (conversation.messages) {
+        messages = conversation.messages;
+    }
+
+
+    // Old chats coming from chatData.js
+    else if (conversation.mapping) {
+
+        messages = Object.values(conversation.mapping)
+            .filter(function (item) {
+
+                return (
+                    item.message &&
+                    item.message.content.content_type === "text" &&
+                    (
+                        item.message.author.role === "user" ||
+                        item.message.author.role === "assistant"
+                    )
+                );
+
+            })
+            .map(function (item) {
+
+                return {
+                    id: item.id,
+                    role: item.message.author.role,
+                    text: item.message.content.parts[0]
+                };
+
+            });
+    }
+
 
     return (
         <div className="chat-area">
@@ -34,22 +57,17 @@ export default function ChatArea({ conversation }) {
                 {conversation.title}
             </div>
 
+
             <div className="chats">
 
-                {messages.map(function (item) {
-
-                    const role =
-                        item.message.author.role;
-
-                    const text =
-                        item.message.content.parts[0];
+                {messages.map(function (message) {
 
                     return (
                         <div
-                            key={item.id}
-                            className={`message ${role}`}
+                            key={message.id}
+                            className={`message ${message.role}`}
                         >
-                            {text}
+                            {message.text}
                         </div>
                     );
 
