@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import "./App.css";
 
 import Sidebar from "./components/Sidebar";
@@ -6,16 +6,33 @@ import ChatHeader from "./components/ChatHeader";
 import ChatArea from "./components/ChatArea";
 import ChatInput from "./components/ChatInput";
 
-import { lists, searchHistory } from "./data/chatData";
 
 export default function App() {
     const [selectedChat, setSelectedChat] = useState(null);
 
     // We only need the items array for the sidebar
-    const [chatList, setChatList] = useState(lists.items);
+    const [chatList, setChatList] = useState([]);
 
     // Full conversations
-    const [conversations, setConversations] = useState(searchHistory);
+    const [conversations, setConversations] = useState(null);
+
+    useEffect(() => {
+        async function userData(){
+            try{
+                const response = await fetch("http://localhost:3000/api/lists")
+                
+                if(!response){
+                    console.log("Error Occured");
+                    
+                }
+                const data = await response.json();
+                setChatList(data);
+           } catch(err){
+            console.log("Error Occured",err);
+            }
+        }
+        userData();
+    }, [])
     
         //Delete Function
     const handleDelete = (idToRemove) => {
@@ -78,12 +95,19 @@ export default function App() {
     }
 
 
-    function handleChatClick(chatItem) {
-        const foundChat = conversations.find(function (chat) {
-            return chat.title === chatItem.title;
-        });
+    async function handleChatClick(chatItem){
+        try{
+            const response = await fetch(`http://localhost:3000/api/conversation?title=${chatItem.title}`)
 
-        setSelectedChat(foundChat || null);
+            const data = await response.json();
+        console.log(data);
+        setSelectedChat(data) ; 
+        } catch(err){
+            console.log(err);
+            
+        }
+
+              
     }
 
 
