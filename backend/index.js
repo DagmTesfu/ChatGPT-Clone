@@ -2,6 +2,7 @@ const express = require("express");
 const app = express();  
 const cors = require("cors");
 const PORT = 3000;
+const { randomUUID } = require("node:crypto");
 
 app.use(express.json());
 app.use(cors({ origin: 'http://localhost:5173' }));
@@ -15868,6 +15869,52 @@ app.get("/api/conversation", (req, res) => {
 
     res.json(conversation);
 });
+
+app.post("/api/conversations", (req, res)=> {
+    // gets text from frontend
+    const text = req.body.text?.trim();
+
+    if(!text){
+        return res.status(400).json({
+            message: "Text is required"
+        });
+    }
+
+    // creates unique id
+    const chatId = randomUUID();
+
+// to be displayed in sidebar
+    const newChat = {
+        id: chatId,
+        title: text
+    }
+
+    // Object to be displayed in chatarea
+    const newConversations = {
+        conversation_id: chatId,
+        title: text,
+        messages: [
+            {
+                id: randomUUID(),
+                role: "user",
+                text: text
+            }
+        ]
+    }
+    // adds in the beginning of the list in the sidebar we can also use the... method
+    // lists.items = [newChat, ...lists.items];
+    lists.items.unshift(newChat);
+    // adds the convo in the beginning of the backend array
+    searchHistory.unshift(newConversations);
+
+    // response was sent to frontend
+    res.status(201).json({
+    chat: newChat, // object is sent to sidebar
+    conversation: newConversations // send the object to chatarea
+    });
+});
+
+
 
 
 

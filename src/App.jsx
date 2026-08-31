@@ -13,8 +13,7 @@ export default function App() {
     // We only need the items array for the sidebar
     const [chatList, setChatList] = useState([]);
 
-    // Full conversations
-    const [conversations, setConversations] = useState(null);
+   
 
     useEffect(() => {
         async function userData(){
@@ -57,42 +56,38 @@ export default function App() {
         
     }
 
-    function handleSend(text) {
-        if (!text.trim()) return;
+    async function handleSend(text){
+        if(!text.trim()) return;
 
-        const chatId = crypto.randomUUID();
-
-        const newChat = {
-            id: chatId,
-            title: text
-        };
-
-        const newConversation = {
-            conversation_id: chatId,
-            title: text,
-
-            messages: [
-                {
-                    id: crypto.randomUUID(),
-                    role: "user",
+        try{
+            const response = await fetch("http://localhost:3000/api/conversations", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json"
+                },
+                body: JSON.stringify({
                     text: text
-                }
-            ]
-        };
+                })
+            })
+        
 
-        // Add the title to the sidebar
-        setChatList(function (oldChats) {
-            return [newChat, ...oldChats];
+        if(!response.ok) {
+            throw new Error("COuld not create conversation");
+        }
+
+        const data = await response.json();
+
+        // display the message in chatarea
+        setChatList(function(oldChats){
+            return [data.chat, ...oldChats];
         });
 
-        // Save the conversation
-        setConversations(function (oldConversations) {
-            return [newConversation, ...oldConversations];
-        });
-
-        // Open it right away
-        setSelectedChat(newConversation);
+        setSelectedChat(data.conversation);
+    } catch(error){
+        console.log("Error message", error);
+        
     }
+}
 
 
     async function handleChatClick(chatItem){

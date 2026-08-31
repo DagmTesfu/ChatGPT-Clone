@@ -31,3 +31,5 @@ export default function ChatOptions({id, handleDelete, handleRename}) {
     </DropdownMenu>
   );
 }
+
+
