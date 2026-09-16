@@ -15874,14 +15874,31 @@ app.get("/api/conversation", (req, res) => {
 });
 
 
-app.post('/api/chat',async (req, res) => {
-  console.log("Received API message:", req.body.model);
-  const aiResponse = await ollama.chat(req.body)
-  console.log(aiResponse);
-  
-  res.status(200).json({ status: "Success", received: req.body });
-});
+app.post('/api/chat', async (req, res) => {
+    console.log("1. Received API message:", req.body);
 
+    try {
+        console.log("2. Calling Ollama");
+
+        const aiResponse = await ollama.chat(req.body);
+
+        console.log("3. Ollama responded:", aiResponse);
+
+        // UPDATED: send Ollama's response back to React
+        res.status(200).json({
+            status: "Success",
+            response: aiResponse
+        });
+
+    } catch (error) {
+        console.error("OLLAMA ERROR:", error);
+
+        res.status(500).json({
+            status: "Error",
+            error: error.message
+        });
+    }
+});
 
 
 

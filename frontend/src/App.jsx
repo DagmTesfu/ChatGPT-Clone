@@ -80,56 +80,70 @@ export default function App() {
         
     }
 
-    async function handleSend(text, model){
-        // stops if user entered empty space or value
-        if(!text.trim()) return;
 
-        try{
-            const response = await axios.post("http://localhost:3000/api/conversations", {
-                text: text
-            }, {
-                headers: {
-                    "Content-Type": "application/json"
+   async function handleSend(text, model) {
+    if (!text.trim()) return;
+
+    // NEW: Show message + loading immediately
+    setSelectedChat({
+        id: Date.now(),
+        title: text,
+        messages: [
+            { id: Date.now(), role: "user", text },
+            { id: Date.now() + 1, role: "assistant", text: "", loading: true }
+        ]
+    });
+
+    try {
+        const response = await axios.post(
+            "http://localhost:3000/api/conversations",
+            { text }
+        );
+
+        const response2 = await axios.post(
+            "http://localhost:3000/api/chat",
+            {
+                model,
+                messages: [
+
+                    { 
+
+                    role: "user", 
+                    content: text 
+
                 }
-            });
+            ]
+            }
+        );
 
-            const response2 = await axios.post("http://localhost:3000/api/chat", {
-            
-                model: model,
-                message: [
-                    {
-                        role: "user",
-                        Content: text
-                    }
-                ]
-            }, {
-                headers: {
-                    "Content-Type": "application/json"
+        const conversation = response.data.conversation;
+        const assistantText = response2.data.response.message.content;
+
+        // UPDATED: Replace loading message with Ollama response
+        setSelectedChat({
+            ...conversation,
+            messages: [
+                // Take all the existing messages and put them into this new array.
+                ...(conversation.messages || []),
+
+                // Display the assistant message 
+                {
+                    id: Date.now(),
+                    role: "assistant",
+                    text: assistantText
                 }
-            });
-    
+            ]
+        });
 
-            console.log(response2);
-            
-
-
-        
-
-        if(response.status !== 200 && response.status !== 201) {
-            throw new Error("COuld not create conversation");
-        }
-
-        const data = response.data;
-
-        // display the message in chatarea
         userData();
 
-        // select new conversations
-        setSelectedChat(data.conversation);
-    } catch(error){
-        console.log("Error message", error);        
+    } catch (error) {
+        console.log("Error:", error.message);
+        console.log("Backend response:", error.response?.data);
     }
 }
+
+
 
 
     async function handleChatClick(chatItem){

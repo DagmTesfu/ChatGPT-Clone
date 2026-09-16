@@ -1,3 +1,7 @@
+import ReactMarkdown from "react-markdown";
+import remarkGfm from "remark-gfm";
+
+
 export default function ChatArea({ conversation }) {
 
     if (!conversation) {
@@ -62,16 +66,26 @@ export default function ChatArea({ conversation }) {
 
                 {messages.map(function (message) {
 
-                    return (
-                        <div
-                            key={message.id}
-                            className={`message ${message.role}`}
-                        >
-                            {message.text}
-                        </div>
-                    );
+    return (
+        <div
+            key={message.id}
+            className={`message ${message.role}`}
+        >
+            {message.loading ? (
+                <div className="typing">
+                    <span></span>
+                    <span></span>
+                    <span></span>
+                </div>
+            ) : (
+                <ReactMarkdown remarkPlugins={[remarkGfm]}>
+                    {message.text}
+                </ReactMarkdown>
+            )}
+        </div>
+    );
 
-                })}
+})}
 
             </div>
 
