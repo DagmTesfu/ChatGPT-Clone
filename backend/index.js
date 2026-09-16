@@ -15875,7 +15875,7 @@ app.get("/api/conversation", (req, res) => {
 
 
 app.post('/api/chat',async (req, res) => {
-  console.log("Received API message:", req.body);
+  console.log("Received API message:", req.body.model);
   const aiResponse = await ollama.chat(req.body)
   console.log(aiResponse);
   
