@@ -1,4 +1,5 @@
 const express = require("express");
+const { default: ollama } = require('ollama');
 const app = express();  
 const cors = require("cors");
 const PORT = 3000;
@@ -6,7 +7,8 @@ const { randomUUID } = require("node:crypto");
 
 app.use(express.json());
 app.use(cors({ origin: 'http://localhost:5173' }));
-const lists = {
+
+let lists = {
     "items": [
         {
             "id": "6a72f352-61b8-83ea-b558-b91e2dfb4b50",
@@ -1077,7 +1079,7 @@ const lists = {
     "limit": 28,
     "offset": 0 
 }
-const searchHistory = [
+let searchHistory = [
 {
     "title": "Casual greeting",
     "create_time": 1786286885.234217,
@@ -15848,6 +15850,7 @@ const searchHistory = [
     "context_truncation_continuation": null
 }
 ]
+
 app.get("/api/lists", (req, res) => {
    
  res.json(lists.items);
@@ -15870,6 +15873,18 @@ app.get("/api/conversation", (req, res) => {
     res.json(conversation);
 });
 
+
+app.post('/api/chat',async (req, res) => {
+  console.log("Received API message:", req.body);
+  const aiResponse = await ollama.chat(req.body)
+  console.log(aiResponse);
+  
+  res.status(200).json({ status: "Success", received: req.body });
+});
+
+
+
+
 app.post("/api/conversations", (req, res)=> {
     // gets text from frontend
     const text = req.body.text?.trim();
@@ -15882,6 +15897,7 @@ app.post("/api/conversations", (req, res)=> {
 
     // creates unique id
     const chatId = randomUUID();
+    const mesId = randomUUID();
 
 // to be displayed in sidebar
     const newChat = {
@@ -15895,7 +15911,7 @@ app.post("/api/conversations", (req, res)=> {
         title: text,
         messages: [
             {
-                id: randomUUID(),
+                id: mesId,
                 role: "user",
                 text: text
             }
@@ -15914,7 +15930,17 @@ app.post("/api/conversations", (req, res)=> {
     });
 });
 
+app.delete("/api/conversations/:id", (req, res) => {
+    const itemId = parseInt(req.params.id)
 
+    const checkItem = searchHistory.some(item => item.id === itemId)
+    searchHistory = searchHistory.filter(item => item.id !== itemId)
+
+    res.status(200).json({ 
+    success: true, 
+    message: `Item with ID ${itemId} successfully deleted.` 
+  });
+})
 
 
 
