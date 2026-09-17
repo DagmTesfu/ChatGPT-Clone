@@ -196,7 +196,21 @@ body {
 .message.assistant pre code {
     padding: 0;
 }
+/* Side bar dropdwon hover effect*/
+.more-icon {
+    all: unset;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 28px;
+    height: 28px;
+    border-radius: 6px;
+    cursor: pointer;
+}
 
+.more-icon:hover {
+    background-color: #3a3a3a;
+}
 
 /* =========================
    SIDEBAR MENU
@@ -324,8 +338,11 @@ body {
 /* History items */
 
 .history-item {
-    padding: 10px 12px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
 
+    padding: 10px 12px;
     margin: 3px 0;
 
     border-radius: 8px;
@@ -334,24 +351,29 @@ body {
     font-weight: 450;
 
     cursor: pointer;
-
     color: #e7e7e7;
 
-    white-space: nowrap;
-
     overflow: hidden;
-    text-overflow: ellipsis;
 
     background-color: transparent;
 
-    transition:
-        background-color 0.2s ease;
+    transition: background-color 0.2s ease;
+}
+.chat-title {
+    flex: 1;
+    min-width: 0;
+
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
 }
 
+.more-icon {
+    flex-shrink: 0;
+}
 .history-item:hover {
-    background-color: #2a2a2a;
+    background-color: #2f2f2f;
 }
-
 .history-item.active-chat {
     background-color: #343434;
     color: white;

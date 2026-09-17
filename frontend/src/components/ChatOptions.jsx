@@ -16,12 +16,11 @@ export default function ChatOptions({
 }) {
     return (
         <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-                <MoreVertical
-                    className="p-1 rounded hover:bg-gray-200"
-                    size={18}
-                />
-            </DropdownMenuTrigger>
+           <DropdownMenuTrigger asChild>
+          <button className="more-icon" type="button">
+          <MoreVertical size={18} />
+        </button>
+          </DropdownMenuTrigger>
 
             <DropdownMenuContent align="end">
 

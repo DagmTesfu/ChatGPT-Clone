@@ -20,7 +20,7 @@ export default function Sidebar({
 
     //Give me chats that have a pinned_time
     const pinnedChats = filteredChats.filter(chat => chat.pinned_time);
-    
+
     // gets everything that isn't pinned
     const normalChats = filteredChats.filter(chat => !chat.pinned_time);
 
@@ -97,16 +97,15 @@ export default function Sidebar({
             )}
 
             {normalChats.map((chat) => (
-                <p
-                    key={chat.id}
-                    className={
-                        selectedChat?.id === chat.id
-                            ? "history-item active-chat"
-                            : "history-item"
-                    }
-                    onClick={() => onChatClick(chat)}
+              <p
+                key={chat.id}
+                    className="history-item"
                 >
-                    {chat.title}
+                    <span className="chat-title">
+                            <span className="chat-title">
+                                {chat.title}
+                            </span>
+                    </span>
 
                     <span onClick={(e) => e.stopPropagation()}>
                         <ChatOptions
