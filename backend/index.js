@@ -15874,6 +15874,9 @@ app.get("/api/conversation", (req, res) => {
 });
 
 
+
+
+
 app.post('/api/chat', async (req, res) => {
     console.log("1. Received API message:", req.body);
 
@@ -15919,7 +15922,8 @@ app.post("/api/conversations", (req, res)=> {
 // to be displayed in sidebar
     const newChat = {
         id: chatId,
-        title: text
+        title: text,
+        pinned_time: null
     }
 
     // Object to be displayed in chatarea
@@ -15947,18 +15951,62 @@ app.post("/api/conversations", (req, res)=> {
     });
 });
 
+app.patch("/api/conversations/:id/pin", (req, res) => {
+
+    // Backend finds that specific chat
+    const id = req.params.id;
+
+    console.log("PIN REQUEST ID:", id);
+
+    // searches through the array
+    const chat = lists.items.find(item => item.id === id);
+
+    console.log("FOUND CHAT:", chat);
+
+    if (!chat) {
+        return res.status(404).json({
+            success: false,
+            message: "Conversation not found"
+        });
+    }
+
+    chat.pinned_time = chat.pinned_time
+        ? null
+        : new Date().toISOString();
+
+    console.log("UPDATED CHAT:", chat);
+
+    // the backend sends the updated chat back
+    res.status(200).json({
+        success: true,
+        chat: chat
+    });
+});
+
 app.delete("/api/conversations/:id", (req, res) => {
-    const itemId = parseInt(req.params.id)
+    const id = req.params.id;
 
-    const checkItem = searchHistory.some(item => item.id === itemId)
-    searchHistory = searchHistory.filter(item => item.id !== itemId)
+    const chatExists = lists.items.some(item => item.id === id);
 
-    res.status(200).json({ 
-    success: true, 
-    message: `Item with ID ${itemId} successfully deleted.` 
-  });
-})
+    if (!chatExists) {
+        return res.status(404).json({
+            message: "Conversation not found"
+        });
+    }
 
+    // Remove from sidebar list
+    lists.items = lists.items.filter(item => item.id !== id);
+
+    // Remove from conversation history
+    searchHistory = searchHistory.filter(
+        item => item.conversation_id !== id
+    );
+
+    res.status(200).json({
+        success: true,
+        message: "Conversation deleted successfully"
+    });
+});
 
 
 app.listen(PORT, () =>{

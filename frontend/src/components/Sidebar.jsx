@@ -6,7 +6,8 @@ export default function Sidebar({
     onChatClick,
     selectedChat,
     handleDelete,
-    handleRename
+    handleRename,
+    handlePin
 }) {
     const [searchText, setSearchText] = useState("");
 
@@ -16,6 +17,16 @@ export default function Sidebar({
             .toLowerCase()
             .includes(searchText.toLowerCase().trim())
     );
+
+    //Give me chats that have a pinned_time
+    const pinnedChats = filteredChats.filter(chat => chat.pinned_time);
+    
+    // gets everything that isn't pinned
+    const normalChats = filteredChats.filter(chat => !chat.pinned_time);
+
+
+    
+    
 
     return (
         <div className="side-bar">
@@ -44,43 +55,75 @@ export default function Sidebar({
                 onChange={(e) => setSearchText(e.target.value)}
             />
 
-            <div className="chat-history">
+           <div className="chat-history">
 
-                {filteredChats.length === 0 ? (
+    {filteredChats.length === 0 ? (
 
-                    <p className="no-chat">
-                        No chats found
-                    </p>
+        <p className="no-chat">
+            No chats found
+        </p>
 
-                ) : (
+    ) : (
 
-                    filteredChats.map((chat) => (
+        <>
+            {pinnedChats.length > 0 && (
+                <>
+                    <h3>Pinned</h3>
+
+                    {pinnedChats.map((chat) => (
                         <p
                             key={chat.id}
-
                             className={
-                                selectedChat?.title === chat.title
+                                selectedChat?.id === chat.id
                                     ? "history-item active-chat"
                                     : "history-item"
-                                    
                             }
-
                             onClick={() => onChatClick(chat)}
                         >
                             {chat.title}
+
                             <span onClick={(e) => e.stopPropagation()}>
-                             <ChatOptions 
-                             id={chat.id}
-                             handleDelete={handleDelete}
-                             handleRename={handleRename}/>
-                             </span>
+                                <ChatOptions
+                                    id={chat.id}
+                                    pinned={!!chat.pinned_time}
+                                    handleDelete={handleDelete}
+                                    handleRename={handleRename}
+                                    handlePin={handlePin}
+                                />
+                            </span>
                         </p>
-                        
-                    ))
+                    ))}
+                </>
+            )}
 
-                )}
+            {normalChats.map((chat) => (
+                <p
+                    key={chat.id}
+                    className={
+                        selectedChat?.id === chat.id
+                            ? "history-item active-chat"
+                            : "history-item"
+                    }
+                    onClick={() => onChatClick(chat)}
+                >
+                    {chat.title}
 
-            </div>
+                    <span onClick={(e) => e.stopPropagation()}>
+                        <ChatOptions
+                            id={chat.id}
+                            pinned={!!chat.pinned_time}
+                            handleDelete={handleDelete}
+                            handleRename={handleRename}
+                            handlePin={handlePin}
+                        />
+                    </span>
+                </p>
+            ))}
+        </>
+
+    )}
+
+</div>
 
             <div className="footer">
 

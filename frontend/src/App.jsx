@@ -66,6 +66,38 @@ export default function App() {
         }
     } 
 
+    // Pin Function
+        // we're passing the ID of the chat
+   const handlePin = async (id) => {
+    console.log("PIN CLICKED:", id);
+
+    try {
+        // we send that ID to the backend
+        const response = await axios.patch(
+            `http://localhost:3000/api/conversations/${id}/pin`
+        );
+
+        console.log("PIN RESPONSE:", response.data);
+
+        // React updates its chatList
+        const updatedChat = response.data.chat;
+
+        setChatList(prev =>
+            prev.map(chat =>
+                chat.id === id
+                    ? updatedChat
+                    : chat
+            )
+        );
+
+    } catch (error) {
+        console.error(
+            "PIN ERROR:",
+            error.response?.data || error.message
+        );
+    }
+};
+
 
     // Rename Function
     const handleRename = (id) => {
@@ -173,6 +205,7 @@ export default function App() {
                 selectedChat={selectedChat}
                 handleDelete={handleDelete}
                 handleRename={handleRename}
+                handlePin={handlePin}
             />
 
             <div className="main-body">
