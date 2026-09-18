@@ -1,6 +1,5 @@
 import { useEffect, useState } from "react";
 import "./App.css";
-
 import Sidebar from "./components/Sidebar";
 import ChatHeader from "./components/ChatHeader";
 import ChatArea from "./components/ChatArea";
@@ -20,8 +19,7 @@ export default function App() {
                 const response = await axios.get("http://localhost:3000/api/lists");
                 
                 if(!response){
-                    console.log("Error Occured");
-                    
+                    console.log("Error Occured");                    
                 }
                 setChatList(response.data);
            } catch(err){
@@ -176,23 +174,19 @@ export default function App() {
 }
 
 
-
-
     async function handleChatClick(chatItem){
         try{
             const response = await axios.get(`http://localhost:3000/api/conversation`, {
                 params: { title: chatItem.title }
             });
 
-            const data = response.data;
+             const data = response.data;
         console.log(data);
         setSelectedChat(data) ; 
         } catch(err){
             console.log(err);
             
-        }
-
-              
+        }          
     }
 
 

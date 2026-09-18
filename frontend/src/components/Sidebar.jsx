@@ -100,6 +100,7 @@ export default function Sidebar({
               <p
                 key={chat.id}
                     className="history-item"
+                    onClick={() => onChatClick(chat)}
                 >
                     <span className="chat-title">
                             <span className="chat-title">
@@ -108,6 +109,7 @@ export default function Sidebar({
                     </span>
 
                     <span onClick={(e) => e.stopPropagation()}>
+                         
                         <ChatOptions
                             id={chat.id}
                             pinned={!!chat.pinned_time}

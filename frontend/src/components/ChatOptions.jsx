@@ -25,7 +25,7 @@ export default function ChatOptions({
             <DropdownMenuContent align="end">
 
                 <DropdownMenuItem onClick={() => handlePin(id)}>
-                    {pinned ? "Unpin" : "Pin"}
+                    {pinned ? "Unpin" : "Pin"} 
                 </DropdownMenuItem>
 
                 <DropdownMenuItem onClick={() => handleRename(id)}>
