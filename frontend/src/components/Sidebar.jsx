@@ -96,6 +96,7 @@ export default function Sidebar({
                 </>
             )}
 
+            <h3>Chats</h3>
             {normalChats.map((chat) => (
               <p
                 key={chat.id}

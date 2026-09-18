@@ -182,7 +182,7 @@ export default function App() {
 
              const data = response.data;
         console.log(data);
-        setSelectedChat(data) ; 
+        setSelectedChat(data); 
         } catch(err){
             console.log(err);
             

@@ -15,6 +15,7 @@ let lists = {
             "title": "Casual greeting",
             "create_time": "2026-08-05T08:24:51.380125Z",
             "update_time": "2026-08-05T08:24:53.161025Z",
+            "pinned": false,
             "pinned_time": null,
             "mapping": null,
             "current_node": null,
