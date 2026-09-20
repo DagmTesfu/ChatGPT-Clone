@@ -13,19 +13,20 @@ export default function App() {
 
     // We only need the items array for the sidebar
     const [chatList, setChatList] = useState([]);
+    const [isLoading, setIsLoading] = useState(false);
 
-     async function userData(){
-            try{
-                const response = await axios.get("http://localhost:3000/api/lists");
-                
-                if(!response){
-                    console.log("Error Occured");                    
-                }
-                setChatList(response.data);
-           } catch(err){
-            console.log("Error Occured",err);
-            }
-        }
+    async function userData() {
+    try {
+        const response = await axios.get(
+            "http://localhost:3000/api/lists"
+        );
+
+        setChatList(response.data);
+
+    } catch (err) {
+        console.log("Error Occured", err);
+    }
+}
 
     useEffect(() => {
        
@@ -110,66 +111,117 @@ export default function App() {
         
     }
 
+    function handleNewChat() {
+    setSelectedChat(null);
+}
 
-   async function handleSend(text, model) {
-    if (!text.trim()) return;
+async function handleSend(text, model) {
+    if (!text.trim() || isLoading) return;
 
-    // NEW: Show message + loading immediately
-    setSelectedChat({
+    setIsLoading(true);
+
+    const userMessage = {
         id: Date.now(),
-        title: text,
-        messages: [
-            { id: Date.now(), role: "user", text },
-            { id: Date.now() + 1, role: "assistant", text: "", loading: true }
-        ]
-    });
+        role: "user",
+        text
+    };
+
+    const loadingMessage = {
+        id: Date.now() + 1,
+        role: "assistant",
+        text: "",
+        loading: true
+    };
 
     try {
-        const response = await axios.post(
-            "http://localhost:3000/api/conversations",
-            { text }
-        );
+        // NEW CHAT
+        // Is there an active conversation?
+        if (!selectedChat) {
 
-        const response2 = await axios.post(
-            "http://localhost:3000/api/chat",
-            {
-                model,
+            setSelectedChat({
+                id: Date.now(),
+                title: text,
                 messages: [
+                    userMessage,
+                    loadingMessage
+                ]
+            });
 
-                    { 
+            const response = await axios.post(
+                "http://localhost:3000/api/conversations",
+                { text }
+            );
 
-                    role: "user", 
-                    content: text 
-
+            const response2 = await axios.post(
+                "http://localhost:3000/api/chat",
+                {
+                    model,
+                    messages: [
+                        {
+                            role: "user",
+                            content: text
+                        }
+                    ]
                 }
-            ]
+            );
+
+            const conversation = response.data.conversation;
+            const assistantText =
+                response2.data.response.message.content;
+
+            setSelectedChat({
+                ...conversation,
+                messages: [
+                    ...(conversation.messages || []),
+                    {
+                        id: Date.now(),
+                        role: "assistant",
+                        text: assistantText
+                    }
+                ]
+            });
+
+            userData();
+
+        } else {
+
+            // EXISTING CHAT
+            // Show the new user message + loading
+            // while keeping previous messages
+            setSelectedChat(prev => ({
+                ...prev,
+                messages: [
+                    ...prev.messages,
+                    userMessage,
+                    loadingMessage
+                ]
+            }));
+
+          const response = await axios.post(
+            `http://localhost:3000/api/conversations/${selectedChat.conversation_id}/messages`,
+            {
+                text,
+                model
             }
         );
 
-        const conversation = response.data.conversation;
-        const assistantText = response2.data.response.message.content;
+        const updatedConversation = response.data.conversation;
 
-        // UPDATED: Replace loading message with Ollama response
-        setSelectedChat({
-            ...conversation,
-            messages: [
-                // Take all the existing messages and put them into this new array.
-                ...(conversation.messages || []),
+        console.log("BACKEND RETURNED:", response.data.conversation);
 
-                // Display the assistant message 
-                {
-                    id: Date.now(),
-                    role: "assistant",
-                    text: assistantText
-                }
-            ]
-        });
+        setSelectedChat(updatedConversation);
 
-        userData();
+            userData();
+        }
 
     } catch (error) {
         console.log("Error:", error.message);
-        console.log("Backend response:", error.response?.data);
+        console.log(
+            "Backend response:",
+            error.response?.data
+        );
+    } finally {
+        setIsLoading(false);
     }
 }
 
@@ -200,6 +252,7 @@ export default function App() {
                 handleDelete={handleDelete}
                 handleRename={handleRename}
                 handlePin={handlePin}
+                handleNewChat={handleNewChat}
             />
 
             <div className="main-body">
@@ -213,6 +266,7 @@ export default function App() {
                 <ChatInput
                     isChatSelected={selectedChat !== null}
                     onSend={handleSend}
+                    isLoading={isLoading}
                 />
 
             </div>

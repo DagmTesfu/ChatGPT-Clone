@@ -7,7 +7,8 @@ export default function Sidebar({
     selectedChat,
     handleDelete,
     handleRename,
-    handlePin
+    handlePin,
+    handleNewChat
 }) {
     const [searchText, setSearchText] = useState("");
 
@@ -36,7 +37,7 @@ export default function Sidebar({
             </h1>
 
             <div className="p2-text">
-                <p>New Chat</p>
+                <p onClick={handleNewChat}>New Chat</p>
                 <p>Library</p>
                 <p>Scheduled</p>
                 <p>Plugins</p>

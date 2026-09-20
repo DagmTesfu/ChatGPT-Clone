@@ -15853,6 +15853,7 @@ let searchHistory = [
 ]
 
 app.get("/api/lists", (req, res) => {
+     console.log("SENDING CHAT LIST:", lists.items);
    
  res.json(lists.items);
 })
@@ -15886,7 +15887,23 @@ app.post('/api/chat', async (req, res) => {
 
         console.log("3. Ollama responded:", aiResponse);
 
-        // UPDATED: send Ollama's response back to React
+        const assistantText = aiResponse.message.content;
+
+        // Save AI response to the conversation
+        const userText = req.body.messages[0].content;
+
+        const conversation = searchHistory.find(
+            chat => chat.title === userText
+        );
+
+        if (conversation) {
+            conversation.messages.push({
+                id: randomUUID(),
+                role: "assistant",
+                text: assistantText
+            });
+        }
+
         res.status(200).json({
             status: "Success",
             response: aiResponse
@@ -15949,6 +15966,80 @@ app.post("/api/conversations", (req, res)=> {
     conversation: newConversations // send the object to chatarea
     });
 });
+
+app.post("/api/conversations/:id/messages", async (req, res) => {
+    // Get the conversation ID from the URL
+    const conversationId = req.params.id;
+    const text = req.body.text?.trim();
+     // Use the selected model, or llama3.2 if no model was provided
+    const model = req.body.model || "llama3.2";
+
+    if (!text) {
+        return res.status(400).json({
+            message: "Text is required"
+        });
+    }
+
+    // Find the existing conversation using its unique conversation ID
+    const conversation = searchHistory.find(
+        chat => chat.conversation_id === conversationId
+    );
+
+    console.log("BEFORE NEW MESSAGE:", conversation.messages);
+
+    if (!conversation) {
+        return res.status(404).json({
+            message: "Conversation not found"
+        });
+    }
+
+    // 1. Add the user's new message to the existing conversation
+    conversation.messages.push({
+        id: randomUUID(),
+        role: "user",
+        text: text
+    });
+
+    console.log("AFTER USER MESSAGE:", conversation.messages);
+
+    // 2. Give Ollama the ENTIRE conversation
+    const messagesForOllama = conversation.messages.map(message => ({
+        role: message.role,
+        content: message.text
+    }));
+
+    try {
+        const aiResponse = await ollama.chat({
+            model,
+            messages: messagesForOllama
+        });
+
+        const assistantText = aiResponse.message.content;
+
+        // 3. Add AI response to the SAME conversation
+        conversation.messages.push({
+            id: randomUUID(),
+            role: "assistant",
+            text: assistantText
+        });
+
+        console.log("AFTER AI MESSAGE:", conversation.messages);
+
+        // 4. Return the ENTIRE updated conversation
+        res.status(200).json({
+            conversation
+        });
+
+    } catch (error) {
+        console.error("OLLAMA ERROR:", error);
+
+        res.status(500).json({
+            status: "Error",
+            error: error.message
+        });
+    }
+});
+
 
 app.patch("/api/conversations/:id/pin", (req, res) => {
 

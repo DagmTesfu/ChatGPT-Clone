@@ -25,14 +25,15 @@ const models = [
 
 export default function ChatInput({
     isChatSelected,
-    onSend
+    onSend,
+    isLoading
 }) {
     const [input, setInput] = useState("");
     const [selectedModel, setSelectedModel] = useState(models[0]);
 
 
     function handleSend() {
-        if (!input.trim()) return;
+        if (!input.trim() || isLoading) return;
 
         onSend(input, selectedModel.id);
         setInput("");
@@ -77,6 +78,7 @@ export default function ChatInput({
                         <button
                             type="button"
                             className="model-selector"
+                            disabled={isLoading}
                         >
                             <span>
                                 {selectedModel.name}
@@ -133,7 +135,7 @@ export default function ChatInput({
                 {/* Message input */}
                 <textarea
                     className="message-input"
-                    placeholder="Ask ChatGPT"
+                    placeholder={isLoading ? "waiting for response..." : "Ask ChatGpt"}
                     rows="1"
                     value={input}
 
@@ -172,6 +174,7 @@ export default function ChatInput({
                     className="send-btn"
                     type="button"
                     onClick={handleSend}
+                    disabled={isLoading}
                 >
                     <svg
                         viewBox="0 0 24 24"
