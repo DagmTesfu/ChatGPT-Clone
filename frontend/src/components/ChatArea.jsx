@@ -71,7 +71,7 @@ export default function ChatArea({ conversation }) {
             key={message.id}
             className={`message ${message.role}`}
         >
-            {message.loading ? (
+            {message.loading && !message.text ? (
                 <div className="typing">
                     <span></span>
                     <span></span>
@@ -81,7 +81,7 @@ export default function ChatArea({ conversation }) {
                 <ReactMarkdown remarkPlugins={[remarkGfm]}>
                     {message.text}
                 </ReactMarkdown>
-            )}
+)}
         </div>
     );
 

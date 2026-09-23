@@ -115,7 +115,7 @@ export default function App() {
     setSelectedChat(null);
 }
 
-async function handleSend(text, model) {
+    async function handleSend(text, model) {
     if (!text.trim() || isLoading) return;
 
     setIsLoading(true);
@@ -134,92 +134,100 @@ async function handleSend(text, model) {
     };
 
     try {
-        // NEW CHAT
-        // Is there an active conversation?
-        if (!selectedChat) {
+        setSelectedChat(prev => ({
+            ...(prev || { title: text }),
+            messages: [
+                ...(prev?.messages || []),
+                userMessage,
+                loadingMessage
+            ]
+        }));
 
-            setSelectedChat({
-                id: Date.now(),
-                title: text,
-                messages: [
-                    userMessage,
-                    loadingMessage
-                ]
-            });
-
-            const response = await axios.post(
-                "http://localhost:3000/api/conversations",
-                { text }
-            );
-
-            const response2 = await axios.post(
-                "http://localhost:3000/api/chat",
-                {
-                    model,
-                    messages: [
-                        {
-                            role: "user",
-                            content: text
-                        }
-                    ]
-                }
-            );
-
-            const conversation = response.data.conversation;
-            const assistantText =
-                response2.data.response.message.content;
-
-            setSelectedChat({
-                ...conversation,
-                messages: [
-                    ...(conversation.messages || []),
-                    {
-                        id: Date.now(),
-                        role: "assistant",
-                        text: assistantText
-                    }
-                ]
-            });
-
-            userData();
-
-        } else {
-
-            // EXISTING CHAT
-            // Show the new user message + loading
-            // while keeping previous messages
-            setSelectedChat(prev => ({
-                ...prev,
-                messages: [
-                    ...prev.messages,
-                    userMessage,
-                    loadingMessage
-                ]
-            }));
-
-          const response = await axios.post(
-            `http://localhost:3000/api/conversations/${selectedChat.conversation_id}/messages`,
+        const response = await fetch(
+            "http://localhost:3000/api/conversations",
             {
-                text,
-                model
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json"
+                },
+                body: JSON.stringify({
+                    text,
+                    model,
+                    conversationId: selectedChat?.conversation_id || null
+                })
             }
         );
 
-        const updatedConversation = response.data.conversation;
-
-        console.log("BACKEND RETURNED:", response.data.conversation);
-
-        setSelectedChat(updatedConversation);
-
-            userData();
+        if (!response.ok) {
+            throw new Error("Failed to send message");
         }
+
+        const reader = response.body.getReader();
+        const decoder = new TextDecoder();
+
+        let assistantText = "";
+        let conversationId =
+            selectedChat?.conversation_id || null;
+
+        while (true) {
+            const { value, done } = await reader.read();
+
+            if (done) break;
+
+            const chunk = decoder.decode(value, {
+                stream: true
+            });
+
+            for (const line of chunk.split("\n")) {
+                if (!line.startsWith("data:")) continue;
+
+                const data = JSON.parse(
+                    line.slice(5).trim()
+                );
+
+                if (data.conversationId) {
+                    conversationId = data.conversationId;
+                }
+
+                if (data.content) {
+                    assistantText += data.content;
+
+                    setSelectedChat(prev => ({
+                        ...prev,
+                        conversation_id: conversationId,
+                        messages: prev.messages.map(message =>
+                            message.loading
+                                ? {
+                                    ...message,
+                                    text: assistantText
+                                }
+                                : message
+                        )
+                    }));
+                }
+
+                if (data.done) {
+                    setSelectedChat(prev => ({
+                        ...prev,
+                        conversation_id: conversationId,
+                        messages: prev.messages.map(message =>
+                            message.loading
+                                ? {
+                                    ...message,
+                                    text: assistantText,
+                                    loading: false
+                                }
+                                : message
+                        )
+                    }));
+                }
+            }
+        }
+
+        userData();
 
     } catch (error) {
         console.log("Error:", error.message);
-        console.log(
-            "Backend response:",
-            error.response?.data
-        );
     } finally {
         setIsLoading(false);
     }
@@ -233,7 +241,7 @@ async function handleSend(text, model) {
             });
 
              const data = response.data;
-        console.log(data);
+        console.log("conversation data",data);
         setSelectedChat(data); 
         } catch(err){
             console.log(err);
